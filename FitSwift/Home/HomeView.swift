@@ -13,9 +13,11 @@ struct HomeView: View {
     @State var active: Int = 52
     @State var stand: Int = 8
     
+    var mockActivities = [Activity(id: 0, title: "Today Steps", subTitle: "Goal: 12,000 steps", image: "figure.walk", tinColor: .green, amount: "6,000"), Activity(id: 0, title: "Today Steps", subTitle: "Goal: 12,000 steps", image: "figure.walk", tinColor: .red, amount: "6,000"), Activity(id: 0, title: "Today Steps", subTitle: "Goal: 12,000 steps", image: "figure.walk", tinColor: .blue, amount: "6,000"), Activity(id: 0, title: "Today Steps", subTitle: "Goal: 12,000 steps", image: "figure.walk", tinColor: .purple, amount: "6,000")]
+    
     var body: some View {
         ScrollView(showsIndicators: false) {
-            VStack {
+            VStack(alignment: .leading) {
                 Text("Welcome")
                     .font(.largeTitle)
                     .padding()
@@ -63,9 +65,36 @@ struct HomeView: View {
                             .padding(.all, 20)
                         ProgressCircleView(progress: $stand, color: .fitSwiftLightGray, goal: 20)
                             .padding(.all, 40)
-                    }
+                    }.padding(.horizontal)
                     
+                    Spacer()
+                }.padding(.horizontal)
+                
+                HStack {
+                    Text("Today Activity")
+                        .padding(.horizontal)
+                        .font(.title2)
+                    
+                    Spacer()
+                    
+                    Button {
+                        print("Show More")
+                    } label: {
+                        Text("Show More")
+                            .foregroundColor(.white)
+                            .background(Color.blue)
+                            .cornerRadius(8)
+                            .padding(.all, 10)
+                            .fontWeight(.medium)
+                    }.padding(.horizontal)
                 }
+                
+                LazyVGrid(columns: Array(repeating: GridItem(spacing:20), count: 2)) {
+                    ForEach(mockActivities, id: \.id) { activity in
+                        ActivityCard(activity: activity)
+                    }
+                }.padding(.horizontal)
+                
             }
         }
     }
