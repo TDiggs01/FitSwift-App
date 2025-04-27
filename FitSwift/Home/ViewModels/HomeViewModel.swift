@@ -121,13 +121,13 @@ class HomeViewModel: ObservableObject {
         }
     }
     
-    // Recent Workouts
+    // MARK: Recent Workouts
     func fetchRecentWorkouts() {
         healthManager.fetchWorkoutsForMonth(month: Date()) { result in
             switch result {
             case .success(let workouts):
                 DispatchQueue.main.async {
-                    self.workouts = Array(workouts.prefix(4))
+                    self.workouts.append(contentsOf: workouts)
                 }
             case .failure(let failure):
                 print(failure.localizedDescription)

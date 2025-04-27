@@ -197,7 +197,7 @@ class HealthManager {
         ]
     }
     
-    // Recent workouts
+    // MARK: Recent workouts
     func fetchWorkoutsForMonth(month: Date, completion: @escaping(Result<[Workout], Error>) -> Void) {
         let workouts = HKSampleType.workoutType()
         let (startDate, endDate) = month.fetchMonthStartAndEndDate()
