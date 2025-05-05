@@ -36,6 +36,13 @@ struct FitnessTabView: View {
                     Text("Charts")
                 }
             
+            ChatView()
+                .tag("Chat")
+                .tabItem {
+                    Image(systemName: "message.fill")
+                    Text("Chat")
+                }
+            
         }
     }
 }
