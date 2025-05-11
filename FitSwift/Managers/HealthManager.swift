@@ -53,19 +53,58 @@ class HealthManager {
     static let shared = HealthManager()
     let healthStore = HKHealthStore()
     
+    // Flag to check if we're running on a simulator
+    private let isSimulator: Bool = {
+        #if targetEnvironment(simulator)
+        return true
+        #else
+        return false
+        #endif
+    }()
+    
+    // Mock data for simulator testing
+    private struct MockData {
+        static let steps = 8742
+        static let calories = 423.5
+        static let exerciseMinutes = 42.0
+        static let standHours = 9
+        
+        static let workouts: [Workout] = [
+            Workout(id: 1, title: "Running", image: "figure.run", tinColor: .green, duration: "32 mins", date: Date().formatWorkoutDate(), calories: "320 kcal"),
+            Workout(id: 2, title: "Strength Training", image: "figure.strengthtraining.traditional", tinColor: .orange, duration: "45 mins", date: Calendar.current.date(byAdding: .day, value: -1, to: Date())?.formatWorkoutDate() ?? "", calories: "280 kcal"),
+            Workout(id: 3, title: "Basketball", image: "figure.basketball", tinColor: .red, duration: "60 mins", date: Calendar.current.date(byAdding: .day, value: -3, to: Date())?.formatWorkoutDate() ?? "", calories: "450 kcal"),
+            Workout(id: 4, title: "Soccer", image: "figure.soccer", tinColor: .blue, duration: "75 mins", date: Calendar.current.date(byAdding: .day, value: -5, to: Date())?.formatWorkoutDate() ?? "", calories: "520 kcal"),
+            Workout(id: 5, title: "Kickboxing", image: "figure.kickboxing", tinColor: .purple, duration: "30 mins", date: Calendar.current.date(byAdding: .day, value: -7, to: Date())?.formatWorkoutDate() ?? "", calories: "310 kcal")
+        ]
+        
+        static let weeklyWorkoutMinutes = [
+            ("Running", 85),
+            ("Strength Training", 120),
+            ("Soccer", 75),
+            ("Basketball", 60),
+            ("Stairstepper", 25),
+            ("Kickboxing", 30)
+        ]
+    }
     
     private init() {
-        Task {
-            do {
-                try await requestHealthKitAccess()
-            } catch {
-                print(error.localizedDescription)
+        if !isSimulator {
+            Task {
+                do {
+                    try await requestHealthKitAccess()
+                } catch {
+                    print("HealthKit access error: \(error.localizedDescription)")
+                }
             }
+        } else {
+            print("Running on simulator - HealthKit will use mock data")
         }
-        
     }
     
     func requestHealthKitAccess() async throws {
+        // Skip on simulator
+        if isSimulator { return }
+        
         let calories = HKQuantityType(.activeEnergyBurned)
         let exercise = HKQuantityType(.appleExerciseTime)
         let stand = HKCategoryType(.appleStandHour)
@@ -74,11 +113,16 @@ class HealthManager {
         
         let healthTypes: Set = [ calories, exercise, stand, steps, workouts]
         try await healthStore.requestAuthorization(toShare: [], read: healthTypes)
-        }
+    }
     
     func fetchTodayCaloriesBurned(completion: @escaping(Result<Double, Error>) -> Void) {
+        if isSimulator {
+            completion(.success(MockData.calories))
+            return
+        }
+        
         let calories = HKQuantityType(.activeEnergyBurned)
-        let predicate = HKQuery.predicateForSamples(withStart: .startOfDay , end: Date())
+        let predicate = HKQuery.predicateForSamples(withStart: .startOfDay, end: Date())
         let query = HKStatisticsQuery(quantityType: calories, quantitySamplePredicate: predicate) { _, results, error in
             guard let quantity = results?.sumQuantity(), error == nil else {
                 completion(.failure(NSError(domain: "com.yourapp.healthkit", code: 1, userInfo: [
@@ -94,8 +138,13 @@ class HealthManager {
     }
     
     func fetchTodayExerciseTime(completion: @escaping(Result<Double, Error>) -> Void) {
+        if isSimulator {
+            completion(.success(MockData.exerciseMinutes))
+            return
+        }
+        
         let exercise = HKQuantityType(.appleExerciseTime)
-        let predicate = HKQuery.predicateForSamples(withStart: .startOfDay , end: Date())
+        let predicate = HKQuery.predicateForSamples(withStart: .startOfDay, end: Date())
         let query = HKStatisticsQuery(quantityType: exercise, quantitySamplePredicate: predicate) { _, results, error in
             guard let quantity = results?.sumQuantity(), error == nil else {
                 completion(.failure(NSError(domain: "com.yourapp.healthkit", code: 1, userInfo: [
@@ -111,6 +160,11 @@ class HealthManager {
     }
     
     func fetchTodayStandHours(completion: @escaping(Result<Int, Error>) -> Void) {
+        if isSimulator {
+            completion(.success(MockData.standHours))
+            return
+        }
+        
         let stand = HKCategoryType(.appleStandHour)
         let predicate = HKQuery.predicateForSamples(withStart: .startOfDay, end: Date())
         let query = HKSampleQuery(sampleType: stand, predicate: predicate, limit: HKObjectQueryNoLimit, sortDescriptors: nil) { _, results, error in
@@ -121,27 +175,42 @@ class HealthManager {
                 return
             }
             
-            let standCount =  samples.filter({$0.value == 0}).count
+            let standCount = samples.filter({$0.value == 0}).count
             completion(.success(standCount))
-            
         }
         healthStore.execute(query)
     }
     
     // User: Fitness Activity
     func fetchTodaySteps(completion: @escaping(Result<Activity, Error>) -> Void) {
+        // Return mock data on simulator
+        if isSimulator {
+            let stepsString = String(format: "%d", MockData.steps)
+            let mockActivity = Activity(
+                title: "Today Steps", 
+                subTitle: "Goal: 10,000 steps", 
+                image: "figure.walk", 
+                tinColor: .green, 
+                amount: stepsString
+            )
+            completion(.success(mockActivity))
+            return
+        }
+        
+        // Real implementation for device
         let steps = HKQuantityType(.stepCount)
-        let predicate = HKQuery.predicateForSamples(withStart: .startOfDay , end: Date())
+        let predicate = HKQuery.predicateForSamples(withStart: .startOfDay, end: Date())
         let query = HKStatisticsQuery(quantityType: steps, quantitySamplePredicate: predicate) { _, results, error in
             guard let quantity = results?.sumQuantity(), error == nil else {
                 completion(.failure(NSError(domain: "com.yourapp.healthkit", code: 1, userInfo: [
-                    NSLocalizedDescriptionKey: "Failed to fetch exercise time data."
+                    NSLocalizedDescriptionKey: "Failed to fetch steps data."
                 ])))
                 return
             }
             
             let steps = quantity.doubleValue(for: .count())
-            let activity = Activity(title: "Today Steps", subTitle: "Goal: 8,000 steps", image: "figure.walk", tinColor: .green, amount: steps.formattedNumberString())
+            let stepsString = String(format: "%.0f", steps)
+            let activity = Activity(title: "Today Steps", subTitle: "Goal: 10,000 steps", image: "figure.walk", tinColor: .green, amount: stepsString)
             completion(.success(activity))
         }
         healthStore.execute(query)
@@ -149,6 +218,20 @@ class HealthManager {
     
     // Workouts for the week
     func fetchCurrentWeekWorkoutStats(completion: @escaping(Result<[Activity], Error>) -> Void) {
+        if isSimulator {
+            let activities = MockData.weeklyWorkoutMinutes.map { (workout, minutes) in
+                Activity(
+                    title: workout,
+                    subTitle: "This week",
+                    image: workoutTypeToImageName(workout),
+                    tinColor: .green,
+                    amount: "\(minutes) mins"
+                )
+            }
+            completion(.success(activities))
+            return
+        }
+        
         let workouts = HKSampleType.workoutType()
         let predicate = HKQuery.predicateForSamples(withStart: .startOfWeek, end: Date())
         let query = HKSampleQuery(sampleType: workouts, predicate: predicate, limit: HKObjectQueryNoLimit, sortDescriptors: nil) { [weak self] _, results, error in
@@ -199,6 +282,11 @@ class HealthManager {
     
     // MARK: Recent workouts
     func fetchWorkoutsForMonth(month: Date, completion: @escaping(Result<[Workout], Error>) -> Void) {
+        if isSimulator {
+            completion(.success(MockData.workouts))
+            return
+        }
+        
         let workouts = HKSampleType.workoutType()
         let (startDate, endDate) = month.fetchMonthStartAndEndDate()
         let predicate = HKQuery.predicateForSamples(withStart: startDate, end: endDate)
@@ -217,18 +305,33 @@ class HealthManager {
         healthStore.execute(query)
     }
     
-    
-}
-
-// MARK: ChartsView Data
-extension HealthManager{
-    
-    struct YearChartDataResult {
-        let ytd: [MonthlyStepModel]
-        let oneYear: [MonthlyStepModel]
-    }
-    
+    // MARK: - Chart Data
     func fetchYTDAndOneYearChartData(completion: @escaping (Result<YearChartDataResult, Error>) -> Void) {
+        if isSimulator {
+            // Generate mock monthly data for the past year
+            var oneYearMonths = [MonthlyStepModel]()
+            var ytdMonths = [MonthlyStepModel]()
+            
+            let calendar = Calendar.current
+            let currentYear = calendar.component(.year, from: Date())
+            
+            for i in 0...11 {
+                let month = calendar.date(byAdding: .month, value: -i, to: Date()) ?? Date()
+                let randomSteps = Int.random(in: 150000...300000) // Random monthly steps between 150k-300k
+                
+                let monthModel = MonthlyStepModel(date: month, count: randomSteps)
+                oneYearMonths.append(monthModel)
+                
+                // Only add to YTD if it's in the current year
+                if calendar.component(.year, from: month) == currentYear {
+                    ytdMonths.append(monthModel)
+                }
+            }
+            
+            completion(.success(YearChartDataResult(ytd: ytdMonths, oneYear: oneYearMonths)))
+            return
+        }
+        
         let steps = HKQuantityType(.stepCount)
         let calendar = Calendar.current
         
@@ -259,9 +362,33 @@ extension HealthManager{
                     // Array is done and data is complete
                     completion(.success(YearChartDataResult(ytd: ytdMonths, oneYear: onYearMonths)))
                 }
-                
             }
             healthStore.execute(query)
         }
     }
+    
+    // MARK: - Helper Methods
+    private func workoutTypeToImageName(_ workoutType: String) -> String {
+        switch workoutType.lowercased() {
+        case "running": return "figure.run"
+        case "strength training": return "figure.strengthtraining.traditional"
+        case "soccer": return "figure.soccer"
+        case "basketball": return "figure.basketball"
+        case "stairstepper": return "figure.stairs"
+        case "kickboxing": return "figure.kickboxing"
+        default: return "figure.walk"
+        }
+    }
+}
+
+// MARK: ChartsView Data
+extension HealthManager {
+    
+    struct YearChartDataResult {
+        let ytd: [MonthlyStepModel]
+        let oneYear: [MonthlyStepModel]
+    }
+    
+    // This method is already defined above, so we're removing the duplicate
+    // func fetchYTDAndOneYearChartData(completion: @escaping (Result<YearChartDataResult, Error>) -> Void) { ... }
 }

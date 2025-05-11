@@ -36,13 +36,12 @@ struct FitnessTabView: View {
                     Text("Charts")
                 }
             
-            ChatView()
+            ChatView(selectedTab: $selectedTab)
                 .tag("Chat")
                 .tabItem {
                     Image(systemName: "message.fill")
                     Text("Chat")
                 }
-            
         }
     }
 }

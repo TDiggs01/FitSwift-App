@@ -6,6 +6,11 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		07DA39BB2DCEEBF4002EDA6E /* GoogleGenerativeAI in Frameworks */ = {isa = PBXBuildFile; productRef = 07DA39BA2DCEEBF4002EDA6E /* GoogleGenerativeAI */; };
+		07DA39BD2DCEEC29002EDA6E /* GenerativeAI-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 07DA39BC2DCEEC29002EDA6E /* GenerativeAI-Info.plist */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXContainerItemProxy section */
 		7AF70EFA2DA4461300447CDB /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -24,6 +29,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		07DA39BC2DCEEC29002EDA6E /* GenerativeAI-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "GenerativeAI-Info.plist"; sourceTree = "<group>"; };
 		7AF70EE92DA4460D00447CDB /* FitSwift.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = FitSwift.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		7AF70EF92DA4461300447CDB /* FitSwiftTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = FitSwiftTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		7AF70F032DA4461300447CDB /* FitSwiftUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = FitSwiftUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -65,6 +71,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				07DA39BB2DCEEBF4002EDA6E /* GoogleGenerativeAI in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -88,6 +95,7 @@
 		7AF70EE02DA4460D00447CDB = {
 			isa = PBXGroup;
 			children = (
+				07DA39BC2DCEEC29002EDA6E /* GenerativeAI-Info.plist */,
 				7AF70EEB2DA4460D00447CDB /* FitSwift */,
 				7AF70EFC2DA4461300447CDB /* FitSwiftTests */,
 				7AF70F062DA4461300447CDB /* FitSwiftUITests */,
@@ -125,6 +133,7 @@
 			);
 			name = FitSwift;
 			packageProductDependencies = (
+				07DA39BA2DCEEBF4002EDA6E /* GoogleGenerativeAI */,
 			);
 			productName = FitSwift;
 			productReference = 7AF70EE92DA4460D00447CDB /* FitSwift.app */;
@@ -208,6 +217,9 @@
 			);
 			mainGroup = 7AF70EE02DA4460D00447CDB;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				07DA39B92DCEEBF4002EDA6E /* XCRemoteSwiftPackageReference "generative-ai-swift" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 7AF70EEA2DA4460D00447CDB /* Products */;
 			projectDirPath = "";
@@ -225,6 +237,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				07DA39BD2DCEEC29002EDA6E /* GenerativeAI-Info.plist in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -573,6 +586,25 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		07DA39B92DCEEBF4002EDA6E /* XCRemoteSwiftPackageReference "generative-ai-swift" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/google/generative-ai-swift";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 0.5.6;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		07DA39BA2DCEEBF4002EDA6E /* GoogleGenerativeAI */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 07DA39B92DCEEBF4002EDA6E /* XCRemoteSwiftPackageReference "generative-ai-swift" */;
+			productName = GoogleGenerativeAI;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 7AF70EE12DA4460D00447CDB /* Project object */;
 }

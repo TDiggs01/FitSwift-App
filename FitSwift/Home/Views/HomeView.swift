@@ -13,13 +13,13 @@ struct HomeView: View {
     var body: some View {
         NavigationStack {
             ScrollView {
-                VStack(alignment: .leading) {
-                    Text("Welcome to FitSwift")
-                        .font(.largeTitle)
-                        .padding()
+                VStack(alignment: .leading, spacing: 20) {
+                    // Add the profile banner at the top
+                    ProfileBannerView(userName: viewModel.userName, profileImage: "person.crop.circle.fill")
+                        .padding(.top)
                     
+                    // Activity rings section
                     HStack {
-                        
                         Spacer()
                         
                         VStack(alignment: .leading) {

@@ -6,11 +6,13 @@
 //
 
 import Foundation
+import SwiftUI
 
 class HomeViewModel: ObservableObject {
     
     let healthManager = HealthManager.shared
     
+    @Published var userName: String = "Fitness User"
     @Published var calories: Int = 0
     @Published var exercise: Int = 0
     @Published var stand: Int = 0
