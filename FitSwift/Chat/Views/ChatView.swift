@@ -10,11 +10,11 @@ import SwiftUI
 struct ChatView: View {
     @StateObject private var viewModel = ChatViewModel()
     @Binding var selectedTab: String
-    
+
     init(selectedTab: Binding<String>) {
         self._selectedTab = selectedTab
     }
-    
+
     var body: some View {
         NavigationStack {
             VStack {
@@ -29,7 +29,7 @@ struct ChatView: View {
                         .padding(.horizontal)
                         .padding(.top, 10)
                     }
-                    .onChange(of: viewModel.messages.count) { _ in
+                    .onChange(of: viewModel.messages.count) {
                         if let lastMessage = viewModel.messages.last {
                             withAnimation {
                                 proxy.scrollTo(lastMessage.id, anchor: .bottom)
@@ -37,14 +37,14 @@ struct ChatView: View {
                         }
                     }
                 }
-                
+
                 HStack {
                     TextField("Ask about your fitness...", text: $viewModel.currentInput)
                         .padding(10)
                         .background(Color(.systemGray6))
                         .cornerRadius(20)
                         .padding(.leading)
-                    
+
                     Button {
                         viewModel.sendMessage(viewModel.currentInput)
                     } label: {

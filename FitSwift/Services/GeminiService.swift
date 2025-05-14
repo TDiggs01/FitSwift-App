@@ -11,33 +11,33 @@ import SwiftUI
 
 // Define the tool response structure
 struct ToolResponse: Codable, Identifiable {
-    let id = UUID()
+    var id: UUID = UUID()
     let toolType: ToolType
     let chartType: ChartType?
     let timeRange: TimeRange?
     let metric: MetricType?
     let title: String?
     let description: String?
-    
+
     enum ToolType: String, Codable {
         case showChart
         case showActivity
         case showWorkoutHistory
     }
-    
+
     enum ChartType: String, Codable {
         case bar
         case line
         case pie
     }
-    
+
     enum TimeRange: String, Codable {
         case day
         case week
         case month
         case year
     }
-    
+
     enum MetricType: String, Codable {
         case steps
         case calories
@@ -50,7 +50,7 @@ struct ToolResponse: Codable, Identifiable {
 class GeminiService {
     static let shared = GeminiService()
     private let model: GenerativeModel
-    
+
     private init() {
         // Create the model configuration
         let config = GenerationConfig(
@@ -59,7 +59,7 @@ class GeminiService {
             topK: 40,
             maxOutputTokens: 2048
         )
-        
+
         // Create the model
         model = GenerativeModel(
             name: "gemini-2.0-flash",
@@ -68,24 +68,24 @@ class GeminiService {
             safetySettings: [],
             systemInstruction: """
             You are a fitness assistant helping with workout advice, step tracking, and general fitness information.
-            
+
             You have access to tools that can show charts and visualizations. When the user asks to see their data visually or asks for charts/graphs, use the appropriate tool:
             - Use showChart to display fitness metrics as charts
             - Use showActivity to display the user's activity rings
             - Use showWorkoutHistory to show recent workouts
-            
+
             For showChart, you need to specify:
             - chartType: "bar", "line", or "pie"
             - timeRange: "day", "week", "month", or "year"
             - metric: "steps", "calories", "exercise", "workouts", or "standHours"
             - title: A title for the chart
             - description: A brief description of what the chart shows
-            
+
             For showWorkoutHistory, you need to specify:
             - timeRange: "week", "month", or "year"
-            
+
             For showActivity, no parameters are needed.
-            
+
             Example function call for showChart:
             {
               "name": "showChart",
@@ -97,13 +97,13 @@ class GeminiService {
                 "description": "Your step count over the past week"
               }
             }
-            
+
             Example function call for showActivity:
             {
               "name": "showActivity",
               "arguments": {}
             }
-            
+
             Example function call for showWorkoutHistory:
             {
               "name": "showWorkoutHistory",
@@ -114,14 +114,14 @@ class GeminiService {
             """
         )
     }
-    
+
     func generateResponse(prompt: String) async throws -> (String, [ToolResponse]?) {
         // Generate content
         let response = try await model.generateContent(prompt)
         let responseText = response.text ?? ""
-        
+
         var toolResponses: [ToolResponse]?
-        
+
         // First try to extract function calls from the response parts
         if let candidates = response.candidates.first {
             let parts = candidates.content.parts
@@ -131,11 +131,11 @@ class GeminiService {
                 }
                 return nil
             }
-            
+
             if !functionCalls.isEmpty {
                 // Process tool calls
                 toolResponses = []
-                
+
                 for functionCall in functionCalls {
                     if let toolResponse = processToolCall(functionCall) {
                         toolResponses?.append(toolResponse)
@@ -143,7 +143,7 @@ class GeminiService {
                 }
             }
         }
-        
+
         // If no function calls were found in the response parts, try to extract them from the text
         if (toolResponses == nil || toolResponses?.isEmpty == true) {
             // Check for both tool_code and json patterns
@@ -153,24 +153,24 @@ class GeminiService {
                 toolResponses = extractToolResponsesFromText(responseText, prefix: "json")
             }
         }
-        
+
         // Clean up the response text by removing the tool_code or json blocks
         let cleanedText = cleanResponseText(responseText)
-        
+
         return (cleanedText, toolResponses)
     }
-    
+
     private func processToolCall(_ functionCall: FunctionCall) -> ToolResponse? {
         let functionName = functionCall.name
-        
+
         do {
             let jsonData = try JSONSerialization.data(withJSONObject: functionCall.args)
-            
+
             switch functionName {
             case "showChart":
                 let decoder = JSONDecoder()
                 let params = try decoder.decode([String: String].self, from: jsonData)
-                
+
                 return ToolResponse(
                     toolType: .showChart,
                     chartType: ToolResponse.ChartType(rawValue: params["chartType"] ?? "bar"),
@@ -179,7 +179,7 @@ class GeminiService {
                     title: params["title"],
                     description: params["description"]
                 )
-                
+
             case "showActivity":
                 return ToolResponse(
                     toolType: .showActivity,
@@ -189,11 +189,11 @@ class GeminiService {
                     title: nil,
                     description: nil
                 )
-                
+
             case "showWorkoutHistory":
                 let decoder = JSONDecoder()
                 let params = try decoder.decode([String: String].self, from: jsonData)
-                
+
                 return ToolResponse(
                     toolType: .showWorkoutHistory,
                     chartType: nil,
@@ -202,7 +202,7 @@ class GeminiService {
                     title: nil,
                     description: nil
                 )
-                
+
             default:
                 return nil
             }
@@ -211,7 +211,7 @@ class GeminiService {
             return nil
         }
     }
-    
+
     func buildPrompt(userMessage: String, fitnessContext: String, conversationHistory: String) -> String {
         return """
             User's fitness context: \(fitnessContext)
@@ -225,34 +225,34 @@ class GeminiService {
         // Look for pattern with the specified prefix
         let pattern = "\(prefix)\\s*\\{([^}]+)\\}"
         let regex = try? NSRegularExpression(pattern: pattern, options: [.dotMatchesLineSeparators])
-        
+
         guard let regex = regex else { return nil }
-        
+
         let nsString = text as NSString
         let matches = regex.matches(in: text, options: [], range: NSRange(location: 0, length: nsString.length))
-        
+
         if matches.isEmpty {
             return nil
         }
-        
+
         var toolResponses: [ToolResponse] = []
-        
+
         for match in matches {
             if match.numberOfRanges > 1 {
                 let jsonRange = match.range(at: 1)
                 var jsonString = nsString.substring(with: jsonRange)
-                
+
                 // Clean up the JSON string
                 jsonString = jsonString.replacingOccurrences(of: "\n", with: " ")
                 jsonString = jsonString.replacingOccurrences(of: "\\", with: "")
-                
+
                 // Try to parse the JSON
                 if let toolResponse = parseToolResponseFromText(jsonString) {
                     toolResponses.append(toolResponse)
                 }
             }
         }
-        
+
         return toolResponses.isEmpty ? nil : toolResponses
     }
 
@@ -261,16 +261,16 @@ class GeminiService {
         // Extract the name and arguments from the text directly
         let namePattern = "\"name\"\\s*:\\s*\"([^\"]+)\""
         let nameRegex = try? NSRegularExpression(pattern: namePattern, options: [])
-        
+
         guard let nameRegex = nameRegex,
               let nameMatch = nameRegex.firstMatch(in: jsonString, options: [], range: NSRange(location: 0, length: jsonString.count)) else {
             return nil
         }
-        
+
         let nsString = jsonString as NSString
         let nameRange = nameMatch.range(at: 1)
         let name = nsString.substring(with: nameRange)
-        
+
         // Extract arguments based on the tool type
         switch name {
         case "showChart":
@@ -280,7 +280,7 @@ class GeminiService {
             let metric = extractStringValue(from: jsonString, forKey: "metric") ?? "steps"
             let title = extractStringValue(from: jsonString, forKey: "title")
             let description = extractStringValue(from: jsonString, forKey: "description")
-            
+
             return ToolResponse(
                 toolType: .showChart,
                 chartType: ToolResponse.ChartType(rawValue: chartType),
@@ -289,7 +289,7 @@ class GeminiService {
                 title: title,
                 description: description
             )
-            
+
         case "showActivity":
             return ToolResponse(
                 toolType: .showActivity,
@@ -299,10 +299,10 @@ class GeminiService {
                 title: nil,
                 description: nil
             )
-            
+
         case "showWorkoutHistory":
             let timeRange = extractStringValue(from: jsonString, forKey: "timeRange") ?? "week"
-            
+
             return ToolResponse(
                 toolType: .showWorkoutHistory,
                 chartType: nil,
@@ -311,7 +311,7 @@ class GeminiService {
                 title: nil,
                 description: nil
             )
-            
+
         default:
             return nil
         }
@@ -321,12 +321,12 @@ class GeminiService {
     private func extractStringValue(from jsonString: String, forKey key: String) -> String? {
         let pattern = "\"\(key)\"\\s*:\\s*\"([^\"]+)\""
         let regex = try? NSRegularExpression(pattern: pattern, options: [])
-        
+
         guard let regex = regex,
               let match = regex.firstMatch(in: jsonString, options: [], range: NSRange(location: 0, length: jsonString.count)) else {
             return nil
         }
-        
+
         let nsString = jsonString as NSString
         let valueRange = match.range(at: 1)
         return nsString.substring(with: valueRange)
@@ -335,7 +335,7 @@ class GeminiService {
     // Updated method to clean response text by removing both tool_code and json blocks
     private func cleanResponseText(_ text: String) -> String {
         var cleanedText = text
-        
+
         // Remove tool_code blocks
         let toolCodePattern = "tool_code\\s*\\{[^}]+\\}"
         if let regex = try? NSRegularExpression(pattern: toolCodePattern, options: [.dotMatchesLineSeparators]) {
@@ -343,7 +343,7 @@ class GeminiService {
             let range = NSRange(location: 0, length: nsString.length)
             cleanedText = regex.stringByReplacingMatches(in: cleanedText, options: [], range: range, withTemplate: "")
         }
-        
+
         // Remove json blocks
         let jsonPattern = "json\\s*\\{[^}]+\\}"
         if let regex = try? NSRegularExpression(pattern: jsonPattern, options: [.dotMatchesLineSeparators]) {
@@ -351,7 +351,7 @@ class GeminiService {
             let range = NSRange(location: 0, length: nsString.length)
             cleanedText = regex.stringByReplacingMatches(in: cleanedText, options: [], range: range, withTemplate: "")
         }
-        
+
         return cleanedText.trimmingCharacters(in: .whitespacesAndNewlines)
     }
 }

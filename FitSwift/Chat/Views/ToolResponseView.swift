@@ -4,7 +4,7 @@ import Charts
 struct ToolResponseView: View {
     let toolResponse: ToolResponse
     @ObservedObject var viewModel = ToolResponseViewModel()
-    
+
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
             switch toolResponse.toolType {
@@ -14,14 +14,14 @@ struct ToolResponseView: View {
                     .padding()
                     .background(Color(.systemGray6))
                     .cornerRadius(12)
-                
+
             case .showActivity:
                 activityRingsView
                     .frame(height: 150)
                     .padding()
                     .background(Color(.systemGray6))
                     .cornerRadius(12)
-                
+
             case .showWorkoutHistory:
                 workoutHistoryView
                     .frame(height: 200)
@@ -29,7 +29,7 @@ struct ToolResponseView: View {
                     .background(Color(.systemGray6))
                     .cornerRadius(12)
             }
-            
+
             if let description = toolResponse.description, !description.isEmpty {
                 Text(description)
                     .font(.caption)
@@ -38,13 +38,13 @@ struct ToolResponseView: View {
         }
         .padding(.vertical, 8)
     }
-    
+
     // Chart view based on the requested chart type and metric
     private var chartView: some View {
         VStack(alignment: .leading) {
             Text(toolResponse.title ?? "Fitness Data")
                 .font(.headline)
-            
+
             if let metric = toolResponse.metric, let chartType = toolResponse.chartType {
                 switch chartType {
                 case .bar:
@@ -60,11 +60,11 @@ struct ToolResponseView: View {
             }
         }
     }
-    
+
     // Bar chart for different metrics
     private func barChartView(for metric: ToolResponse.MetricType) -> some View {
         let data = getChartData(for: metric)
-        
+
         return Chart(data, id: \.id) { item in
             BarMark(
                 x: .value("Date", item.date, unit: .day),
@@ -80,11 +80,11 @@ struct ToolResponseView: View {
             }
         }
     }
-    
+
     // Line chart for different metrics
     private func lineChartView(for metric: ToolResponse.MetricType) -> some View {
         let data = getChartData(for: metric)
-        
+
         return Chart(data, id: \.id) { item in
             LineMark(
                 x: .value("Date", item.date, unit: .day),
@@ -92,7 +92,7 @@ struct ToolResponseView: View {
             )
             .foregroundStyle(Color.red)
             .interpolationMethod(.catmullRom)
-            
+
             PointMark(
                 x: .value("Date", item.date, unit: .day),
                 y: .value(metric.rawValue.capitalized, item.value)
@@ -107,11 +107,11 @@ struct ToolResponseView: View {
             }
         }
     }
-    
+
     // Pie chart for different metrics
     private func pieChartView(for metric: ToolResponse.MetricType) -> some View {
         let data = getChartData(for: metric)
-        
+
         return Chart(data, id: \.id) { item in
             SectorMark(
                 angle: .value(item.date.formatted(.dateTime.weekday(.abbreviated)), item.value),
@@ -127,13 +127,13 @@ struct ToolResponseView: View {
         }
         .chartLegend(position: .bottom, alignment: .center)
     }
-    
+
     // Activity rings view
     private var activityRingsView: some View {
         VStack(alignment: .leading) {
             Text("Activity Rings")
                 .font(.headline)
-            
+
             HStack(spacing: 20) {
                 // Move ring
                 ZStack {
@@ -150,7 +150,7 @@ struct ToolResponseView: View {
                             .font(.caption2)
                     }
                 }
-                
+
                 // Exercise ring
                 ZStack {
                     Circle()
@@ -166,7 +166,7 @@ struct ToolResponseView: View {
                             .font(.caption2)
                     }
                 }
-                
+
                 // Stand ring
                 ZStack {
                     Circle()
@@ -186,13 +186,13 @@ struct ToolResponseView: View {
             .padding()
         }
     }
-    
+
     // Workout history view
     private var workoutHistoryView: some View {
         VStack(alignment: .leading) {
             Text("Recent Workouts")
                 .font(.headline)
-            
+
             ScrollView {
                 VStack(spacing: 10) {
                     ForEach(viewModel.recentWorkouts, id: \.id) { workout in
@@ -200,7 +200,7 @@ struct ToolResponseView: View {
                             Image(systemName: workout.image)
                                 .foregroundColor(workout.tinColor)
                                 .frame(width: 30, height: 30)
-                            
+
                             VStack(alignment: .leading) {
                                 Text(workout.title)
                                     .font(.subheadline)
@@ -209,9 +209,9 @@ struct ToolResponseView: View {
                                     .font(.caption)
                                     .foregroundColor(.secondary)
                             }
-                            
+
                             Spacer()
-                            
+
                             VStack(alignment: .trailing) {
                                 Text(workout.duration)
                                     .font(.subheadline)
@@ -226,7 +226,7 @@ struct ToolResponseView: View {
             }
         }
     }
-    
+
     // Helper function to get chart data based on metric type
     private func getChartData(for metric: ToolResponse.MetricType) -> [ChartDataPoint] {
         switch metric {
@@ -244,12 +244,6 @@ struct ToolResponseView: View {
     }
 }
 
-// Chart data point structure
-struct ChartDataPoint: Identifiable {
-    let id = UUID()
-    let date: Date
-    let value: Double
-}
 
 // ToolResponseViewModel to provide data for the charts
 class ToolResponseViewModel: ObservableObject {
@@ -258,61 +252,61 @@ class ToolResponseViewModel: ObservableObject {
     @Published var exerciseData: [ChartDataPoint] = []
     @Published var workoutsData: [ChartDataPoint] = []
     @Published var standData: [ChartDataPoint] = []
-    
+
     @Published var movePercentage: Double = 0.7
     @Published var exercisePercentage: Double = 0.85
     @Published var standPercentage: Double = 0.5
-    
+
     @Published var recentWorkouts: [Workout] = []
-    
+
     private let healthManager = HealthManager.shared
-    
+
     init() {
         loadMockData()
         fetchRecentWorkouts()
     }
-    
+
     private func loadMockData() {
         // Generate mock data for the past week
         let calendar = Calendar.current
         let today = Date()
-        
+
         // Steps data (7000-15000 range)
         stepsData = (0..<7).map { day in
             let date = calendar.date(byAdding: .day, value: -day, to: today)!
             return ChartDataPoint(date: date, value: Double.random(in: 7000...15000))
         }
-        
+
         // Calories data (300-700 range)
         caloriesData = (0..<7).map { day in
             let date = calendar.date(byAdding: .day, value: -day, to: today)!
             return ChartDataPoint(date: date, value: Double.random(in: 300...700))
         }
-        
+
         // Exercise data (20-70 minutes range)
         exerciseData = (0..<7).map { day in
             let date = calendar.date(byAdding: .day, value: -day, to: today)!
             return ChartDataPoint(date: date, value: Double.random(in: 20...70))
         }
-        
+
         // Workouts data (0-2 workouts per day)
         workoutsData = (0..<7).map { day in
             let date = calendar.date(byAdding: .day, value: -day, to: today)!
             return ChartDataPoint(date: date, value: Double.random(in: 0...2).rounded())
         }
-        
+
         // Stand hours data (6-12 hours range)
         standData = (0..<7).map { day in
             let date = calendar.date(byAdding: .day, value: -day, to: today)!
             return ChartDataPoint(date: date, value: Double.random(in: 6...12).rounded())
         }
-        
+
         // Update activity ring percentages
         movePercentage = Double.random(in: 0.5...1.0)
         exercisePercentage = Double.random(in: 0.4...1.0)
         standPercentage = Double.random(in: 0.3...1.0)
     }
-    
+
     func fetchRecentWorkouts() {
         healthManager.fetchWorkoutsForMonth(month: Date()) { [weak self] result in
             DispatchQueue.main.async {
@@ -344,7 +338,7 @@ struct ToolResponseView_Previews: PreviewProvider {
                 title: "Weekly Steps",
                 description: "Your step count over the past week"
             ))
-            
+
             ToolResponseView(toolResponse: ToolResponse(
                 toolType: .showActivity,
                 chartType: nil,
@@ -353,7 +347,7 @@ struct ToolResponseView_Previews: PreviewProvider {
                 title: nil,
                 description: "Your activity rings for today"
             ))
-            
+
             ToolResponseView(toolResponse: ToolResponse(
                 toolType: .showWorkoutHistory,
                 chartType: nil,

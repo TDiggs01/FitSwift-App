@@ -9,7 +9,7 @@ import SwiftUI
 
 struct FitnessTabView: View {
     @State var selectedTab = "Home"
-    
+
     init() {
         let apparence = UITabBarAppearance()
         apparence.configureWithOpaqueBackground()
@@ -17,30 +17,37 @@ struct FitnessTabView: View {
         apparence.stackedLayoutAppearance.selected.titleTextAttributes = [NSAttributedString.Key.foregroundColor: UIColor.fitSwiftRed]
         UITabBar.appearance().scrollEdgeAppearance = apparence
     }
-    
+
     var body: some View {
         TabView(selection: $selectedTab) {
             HomeView()
                 .tag("Home")
                 .tabItem {
                     Image(systemName: "house")
-                    
+
                     Text("Home")
                 }
-            
+
             ChartsView()
                 .tag("Charts")
                 .tabItem {
                     Image(systemName: "chart.line.uptrend.xyaxis")
-                    
+
                     Text("Charts")
                 }
-            
+
             ChatView(selectedTab: $selectedTab)
                 .tag("Chat")
                 .tabItem {
                     Image(systemName: "message.fill")
                     Text("Chat")
+                }
+
+            InsightsView()
+                .tag("Insights")
+                .tabItem {
+                    Image(systemName: "brain.head.profile")
+                    Text("Insights")
                 }
         }
     }

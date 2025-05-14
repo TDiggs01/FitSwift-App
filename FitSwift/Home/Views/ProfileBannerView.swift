@@ -11,11 +11,11 @@ import PhotosUI
 struct ProfileBannerView: View {
     let userName: String
     let profileImage: String
-    
+
     @State private var selectedItem: PhotosPickerItem?
     @State private var userProfileImage: UIImage?
     @State private var showingImagePicker = false
-    
+
     var body: some View {
         HStack(spacing: 15) {
             // Profile Image with tap gesture to change
@@ -45,9 +45,9 @@ struct ProfileBannerView: View {
                 showingImagePicker = true
             }
             .photosPicker(isPresented: $showingImagePicker, selection: $selectedItem, matching: .images)
-            .onChange(of: selectedItem) { newItem in
+            .onChange(of: selectedItem) {
                 Task {
-                    if let data = try? await newItem?.loadTransferable(type: Data.self),
+                    if let data = try? await selectedItem?.loadTransferable(type: Data.self),
                        let image = UIImage(data: data) {
                         await MainActor.run {
                             userProfileImage = image
@@ -57,20 +57,20 @@ struct ProfileBannerView: View {
                     }
                 }
             }
-            
+
             // User Info
             VStack(alignment: .leading, spacing: 4) {
                 Text("Welcome back")
                     .font(.subheadline)
                     .foregroundColor(.gray)
-                
+
                 Text(userName)
                     .font(.title2)
                     .fontWeight(.bold)
             }
-            
+
             Spacer()
-            
+
             // Settings Button
             Button {
                 print("Settings tapped")
@@ -90,14 +90,14 @@ struct ProfileBannerView: View {
             loadProfileImage()
         }
     }
-    
+
     // Save profile image to UserDefaults
     private func saveProfileImage(_ image: UIImage) {
         if let imageData = image.jpegData(compressionQuality: 0.8) {
             UserDefaults.standard.set(imageData, forKey: "userProfileImage")
         }
     }
-    
+
     // Load profile image from UserDefaults
     private func loadProfileImage() {
         if let imageData = UserDefaults.standard.data(forKey: "userProfileImage"),

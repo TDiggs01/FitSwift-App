@@ -7,8 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		079493FE2DD40BB400495D91 /* GenerativeAI-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 079493FD2DD40BB400495D91 /* GenerativeAI-Info.plist */; };
 		07DA39BB2DCEEBF4002EDA6E /* GoogleGenerativeAI in Frameworks */ = {isa = PBXBuildFile; productRef = 07DA39BA2DCEEBF4002EDA6E /* GoogleGenerativeAI */; };
-		07DA39BD2DCEEC29002EDA6E /* GenerativeAI-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 07DA39BC2DCEEC29002EDA6E /* GenerativeAI-Info.plist */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -29,7 +29,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		07DA39BC2DCEEC29002EDA6E /* GenerativeAI-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "GenerativeAI-Info.plist"; sourceTree = "<group>"; };
+		079493FD2DD40BB400495D91 /* GenerativeAI-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "GenerativeAI-Info.plist"; sourceTree = "<group>"; };
 		7AF70EE92DA4460D00447CDB /* FitSwift.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = FitSwift.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		7AF70EF92DA4461300447CDB /* FitSwiftTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = FitSwiftTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		7AF70F032DA4461300447CDB /* FitSwiftUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = FitSwiftUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -95,7 +95,7 @@
 		7AF70EE02DA4460D00447CDB = {
 			isa = PBXGroup;
 			children = (
-				07DA39BC2DCEEC29002EDA6E /* GenerativeAI-Info.plist */,
+				079493FD2DD40BB400495D91 /* GenerativeAI-Info.plist */,
 				7AF70EEB2DA4460D00447CDB /* FitSwift */,
 				7AF70EFC2DA4461300447CDB /* FitSwiftTests */,
 				7AF70F062DA4461300447CDB /* FitSwiftUITests */,
@@ -237,7 +237,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				07DA39BD2DCEEC29002EDA6E /* GenerativeAI-Info.plist in Resources */,
+				079493FE2DD40BB400495D91 /* GenerativeAI-Info.plist in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

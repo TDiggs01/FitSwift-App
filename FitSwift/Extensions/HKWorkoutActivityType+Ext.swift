@@ -215,3 +215,14 @@ extension HKWorkoutActivityType {
     }
 }
 
+// MARK: ChartsView Data
+extension HealthManager {
+
+    struct YearChartDataResult {
+        let ytd: [MonthlyStepModel]
+        let oneYear: [MonthlyStepModel]
+    }
+
+    // This method is already defined above, so we're removing the duplicate
+    // func fetchYTDAndOneYearChartData(completion: @escaping (Result<YearChartDataResult, Error>) -> Void) { ... }
+}
